@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning Tracker</title>
+<meta name="description" content="8-week developer learning plan and live progress tracker.">
+<style>
+  :root {
+    --bg: #f6f5fa; --card: #ffffff; --ink: #1d1b26; --muted: #6b6880; --line: #e4e1ee;
+    --accent: #6a4bf5; --accent-soft: #eeeafe; --good: #1f9d61; --good-soft: #e3f5ec;
+    --warn: #b26b00; --warn-soft: #fdf1dd; --bar: #e9e6f3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121118; --card: #1b1a23; --ink: #ecebf3; --muted: #a09db5; --line: #2d2b39;
+      --accent: #a58eff; --accent-soft: #272040; --good: #4cc38a; --good-soft: #15301f;
+      --warn: #f0b04e; --warn-soft: #33260c; --bar: #2a2836;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  a { color: var(--accent); }
+  code { font: 0.9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--bar); padding: 1px 5px; border-radius: 4px; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 32px 16px 64px; }
+  .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+  h1 { font-size: clamp(26px, 5vw, 36px); line-height: 1.15; margin: 0 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .summary { display: grid; gap: 18px; grid-template-columns: 1fr auto; align-items: center; margin-bottom: 16px; }
+  .big { font-size: 40px; font-weight: 700; line-height: 1; }
+  .big small { font-size: 16px; font-weight: 500; color: var(--muted); margin-left: 6px; }
+  .bar { height: 10px; background: var(--bar); border-radius: 99px; overflow: hidden; margin-top: 12px; }
+  .bar > span { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .6s ease; }
+  .bar.done > span { background: var(--good); }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; padding: 4px 12px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+  .pill.good { background: var(--good-soft); color: var(--good); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 600; font-size: 15px;
+         background: var(--accent); color: #fff; padding: 12px 18px; border-radius: 10px; white-space: nowrap; }
+  @media (prefers-color-scheme: dark) { .btn { color: #15121f; } }
+  .btn:focus-visible, summary:focus-visible, .tile:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 0 0 28px; }
+  .tile { display: block; text-decoration: none; color: inherit; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .tile.now { border: 2px solid var(--accent); padding: 11px; }
+  .tile .wk { font-size: 12px; font-weight: 600; color: var(--muted); display: flex; justify-content: space-between; }
+  .tile .nm { font-size: 14px; font-weight: 600; margin: 2px 0 8px; line-height: 1.3; min-height: 2.6em; }
+  .tile .bar { height: 6px; margin-top: 0; }
+  .tile.complete .wk span:last-child { color: var(--good); }
+
+  h2.section-title { font-size: 20px; margin: 0 0 12px; }
+  details.week { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 12px; scroll-margin-top: 16px; }
+  details.week.now { border: 2px solid var(--accent); }
+  summary { list-style: none; cursor: pointer; padding: 16px 20px; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; border-radius: 14px; }
+  summary::-webkit-details-marker { display: none; }
+  summary .t { font-weight: 700; font-size: 17px; }
+  summary .d { font-size: 14px; color: var(--muted); grid-column: 1; }
+  summary .n { grid-row: 1 / span 2; grid-column: 2; text-align: right; font-weight: 600; }
+  summary .n .bar { width: 120px; height: 6px; margin-top: 6px; }
+  .body { padding: 0 20px 20px; }
+  .word { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 15px; }
+  .word b { color: var(--accent); }
+  .label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
+  ul.plain { margin: 0; padding-left: 20px; }
+  ul.plain li { margin: 3px 0; }
+  ul.items { list-style: none; margin: 0; padding: 0; }
+  ul.items li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+  ul.items li:first-child { border-top: 0; }
+  .check { width: 20px; height: 20px; margin-top: 2px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; }
+  li.done .check { background: var(--good); border-color: var(--good); }
+  li.done .check::after { content: ""; width: 5px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
+  li.done .txt { color: var(--muted); }
+  .how { margin-top: 28px; font-size: 15px; color: var(--muted); }
+  .how ol { padding-left: 20px; }
+  .notice { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 14px 16px; font-weight: 600; }
+  .stamp { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+  @media (max-width: 640px) {
+    .wrap { padding-top: 24px; }
+    .summary { grid-template-columns: 1fr; }
+    .btn { width: 100%; }
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+    summary .n .bar { width: 72px; }
+    .card, summary, .body { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="eyebrow">Learning tracker</p>
+  <h1 id="title">Loading your plan…</h1>
+  <p class="sub" id="sub"></p>
+
+  <section class="card summary" id="summary" hidden>
+    <div>
+      <div class="big" id="pct">0%<small></small></div>
+      <div class="bar" role="progressbar" aria-label="Overall progress" aria-valuemin="0" aria-valuemax="100" id="mainbar"><span style="width:0"></span></div>
+      <div class="meta" id="pills"></div>
+    </div>
+    <a class="btn" id="edit" href="#how">Tick a topic</a>
+  </section>
+
+  <div id="error" hidden></div>
+
+  <nav class="tiles" id="tiles" aria-label="Weeks"></nav>
+
+  <h2 class="section-title" id="weeks-title" hidden>Week by week</h2>
+  <div id="sections"></div>
+
+  <section class="how" id="how">
+    <h2 class="section-title">How to update</h2>
+    <ol>
+      <li>Click <strong>Tick a topic</strong> (it opens <code>PLAN.md</code> on GitHub).</li>
+      <li>Change <code>[ ]</code> to <code>[x]</code> for each topic you can explain without notes.</li>
+      <li>Click <strong>Commit changes</strong>. This page updates by itself in about a minute.</li>
+    </ol>
+    <p class="stamp" id="stamp"></p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const DAY = 864e5;
+  const openState = new Set();
+  let firstRender = true;
+
+  // ---------- helpers ----------
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function inline(src) {
+    const codes = [];
+    let s = esc(src).replace(/`([^`]+)`/g, (_, c) => { codes.push(c); return '\u0000' + (codes.length - 1) + '\u0000'; });
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    s = s.replace(/(^|[^*\w])\*([^*]+)\*/g, '$1<em>$2</em>');
+    return s.replace(/\u0000(\d+)\u0000/g, (_, i) => '<code>' + codes[+i] + '</code>');
+  }
+  const toDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+  const today = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
+  const fmt = (d, opts) => d.toLocaleDateString('en-GB', opts || { day: 'numeric', month: 'short' });
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+  // ---------- parse PLAN.md ----------
+  function parse(md) {
+    const plan = { title: 'Learning Plan', start: null, goal: null, sections: [] };
+    let cur = null, m;
+    for (const raw of md.split(/\r?\n/)) {
+      const line = raw.trim();
+      if ((m = line.match(/^#\s+(.+)/))) { plan.title = m[1]; continue; }
+      if ((m = line.match(/^##\s+(.+)/))) {
+        cur = { heading: m[1], title: m[1], week: null, words: [], learn: [], speak: [], items: [] };
+        const w = m[1].match(/^Week\s+(\d+)\s*[:\-–—]?\s*(.*)$/i);
+        if (w) { cur.week = +w[1]; cur.title = w[2] || ('Week ' + w[1]); }
+        plan.sections.push(cur); continue;
+      }
+      if (!cur) {
+        if ((m = line.match(/^Start:\s*(\d{4}-\d{2}-\d{2})/i))) plan.start = m[1];
+        if ((m = line.match(/^Goal:\s*(\d{4}-\d{2}-\d{2})/i))) plan.goal = m[1];
+        continue;
+      }
+      if ((m = line.match(/^[-*]\s+\[( |x|X)\]\s+(.+)/))) { cur.items.push({ done: m[1].toLowerCase() === 'x', text: m[2] }); continue; }
+      if ((m = line.match(/^Word:\s*(.+)/i))) { cur.words.push(m[1]); continue; }
+      if ((m = line.match(/^Learn:\s*(.+)/i))) { cur.learn.push(m[1]); continue; }
+      if ((m = line.match(/^Speak:\s*(.+)/i))) { cur.speak.push(m[1]); continue; }
+    }
+    return plan;
+  }
+
+  // ---------- render ----------
+  function render(plan) {
+    const now = today();
+    const start = plan.start ? toDate(plan.start) : null;
+    const goal = plan.goal ? toDate(plan.goal) : null;
+    const weeks = plan.sections.filter(s => s.week);
+    weeks.forEach(s => {
+      s.from = start ? new Date(start.getTime() + (s.week - 1) * 7 * DAY) : null;
+      s.to = s.from ? new Date(s.from.getTime() + 6 * DAY) : null;
+      s.done = s.items.filter(i => i.done).length;
+      s.total = s.items.length;
+      s.isNow = s.from && now >= s.from && now <= s.to;
+    });
+    let current = weeks.find(s => s.isNow);
+    if (!current && start && now < start) current = weeks[0];
+
+    const all = plan.sections.flatMap(s => s.items);
+    const done = all.filter(i => i.done).length;
+    const pct = all.length ? Math.round(done / all.length * 100) : 0;
+
+    // expected progress so far (week topics only)
+    let expected = 0, weekDone = 0;
+    weeks.forEach(s => {
+      weekDone += s.done;
+      if (s.from) expected += s.total * clamp(((now - s.from) / DAY + 1) / 7, 0, 1);
+    });
+    const diff = Math.round(weekDone - expected);
+
+    document.title = plan.title + ' · ' + pct + '%';
+    document.getElementById('title').textContent = plan.title;
+    const sub = [];
+    if (start && goal) sub.push(fmt(start) + ' – ' + fmt(goal, { day: 'numeric', month: 'short', year: 'numeric' }));
+    if (goal) {
+      const left = Math.round((goal - now) / DAY);
+      sub.push(left > 0 ? left + ' days left' : left === 0 ? 'Goal day is today' : 'Plan finished');
+    }
+    document.getElementById('sub').textContent = sub.join(' · ');
+
+    document.getElementById('summary').hidden = false;
+    document.getElementById('pct').innerHTML = pct + '%<small>' + done + ' of ' + all.length + ' topics</small>';
+    const mainbar = document.getElementById('mainbar');
+    mainbar.setAttribute('aria-valuenow', pct);
+    mainbar.classList.toggle('done', pct === 100);
+    requestAnimationFrame(() => { mainbar.firstElementChild.style.width = pct + '%'; });
+
+    const pills = [];
+    if (start && now < start) {
+      const d = Math.round((start - now) / DAY);
+      pills.push(['', 'Starts in ' + d + (d === 1 ? ' day' : ' days')]);
+    } else if (pct === 100) {
+      pills.push(['good', 'All topics done']);
+    } else if (diff >= 2) {
+      pills.push(['good', 'Ahead by ' + diff + ' topics']);
+    } else if (diff >= -1) {
+      pills.push(['good', 'On track']);
+    } else {
+      pills.push(['warn', 'Behind by ' + (-diff) + ' topics']);
+    }
+    if (current) pills.push(['', 'Now: Week ' + current.week + ' · ' + current.title]);
+    document.getElementById('pills').innerHTML = pills.map(([c, t]) => '<span class="pill ' + c + '">' + esc(t) + '</span>').join('');
+
+    // week tiles
+    document.getElementById('tiles').innerHTML = weeks.map(s => {
+      const p = s.total ? Math.round(s.done / s.total * 100) : 0;
+      const cls = ['tile', s === current ? 'now' : '', p === 100 ? 'complete' : ''].join(' ');
+      return '<a class="' + cls + '" href="#week-' + s.week + '" data-week="' + s.week + '">' +
+        '<div class="wk"><span>Week ' + s.week + '</span><span>' + s.done + '/' + s.total + '</span></div>' +
+        '<div class="nm">' + esc(s.title) + '</div>' +
+        '<div class="bar' + (p === 100 ? ' done' : '') + '"><span style="width:' + p + '%"></span></div></a>';
+    }).join('');
+
+    // sections
+    if (firstRender && current) openState.add(current.heading);
+    document.getElementById('weeks-title').hidden = false;
+    document.getElementById('sections').innerHTML = plan.sections.map((s, idx) => {
+      const d = s.items.filter(i => i.done).length, t = s.items.length;
+      const p = t ? Math.round(d / t * 100) : 0;
+      const id = s.week ? 'week-' + s.week : 'section-' + idx;
+      const heading = s.week ? 'Week ' + s.week + ': ' + s.title : s.title;
+      const dates = s.from ? fmt(s.from) + ' – ' + fmt(s.to) : 'Every day';
+      const words = s.words.map(w => {
+        const k = w.indexOf(' = ');
+        return '<div class="word">' + (k > 0 ? '<b>' + esc(w.slice(0, k)) + '</b> = ' + inline(w.slice(k + 3)) : inline(w)) + '</div>';
+      }).join('');
+      const learn = s.learn.length ? '<div class="label">Learn from</div><ul class="plain">' + s.learn.map(l => '<li>' + inline(l) + '</li>').join('') + '</ul>' : '';
+      const speak = s.speak.length ? '<div class="label">Speak it in English</div><ul class="plain">' + s.speak.map(l => '<li>' + inline(l) + '</li>').join('') + '</ul>' : '';
+      const items = '<div class="label">Topics</div><ul class="items">' + s.items.map(i =>
+        '<li class="' + (i.done ? 'done' : '') + '"><span class="check" aria-hidden="true"></span><span class="txt">' +
+        '<span class="sr" style="position:absolute;left:-9999px">' + (i.done ? 'Done: ' : 'To do: ') + '</span>' + inline(i.text) + '</span></li>').join('') + '</ul>';
+      return '<details class="week' + (s === current ? ' now' : '') + '" id="' + id + '" data-key="' + esc(s.heading) + '"' + (openState.has(s.heading) ? ' open' : '') + '>' +
+        '<summary><span class="t">' + esc(heading) + '</span><span class="n">' + d + '/' + t +
+        '<div class="bar' + (p === 100 ? ' done' : '') + '"><span style="width:' + p + '%"></span></div></span>' +
+        '<span class="d">' + dates + '</span></summary>' +
+        '<div class="body">' + words + items + learn + speak + '</div></details>';
+    }).join('');
+
+    document.querySelectorAll('details.week').forEach(el => el.addEventListener('toggle', () => {
+      el.open ? openState.add(el.dataset.key) : openState.delete(el.dataset.key);
+    }));
+    document.querySelectorAll('.tile').forEach(a => a.addEventListener('click', () => {
+      const el = document.getElementById('week-' + a.dataset.week);
+      if (el) { el.open = true; openState.add(el.dataset.key); }
+    }));
+
+    document.getElementById('stamp').textContent = 'Last checked ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '. The page checks for new ticks every 2 minutes.';
+    firstRender = false;
+  }
+
+  // ---------- GitHub edit link ----------
+  function setEditLink() {
+    const h = location.hostname;
+    const a = document.getElementById('edit');
+    if (!h.endsWith('.github.io')) return;
+    const user = h.split('.')[0];
+    const seg = location.pathname.split('/').filter(Boolean);
+    const repo = seg.length && !seg[0].includes('.') ? seg[0] : user + '.github.io';
+    a.href = 'https://github.com/' + user + '/' + repo + '/edit/main/PLAN.md';
+    a.target = '_blank';
+    a.rel = 'noopener';
+  }
+
+  // ---------- load ----------
+  function rawUrl() {
+    const h = location.hostname;
+    if (!h.endsWith('.github.io')) return null;
+    const user = h.split('.')[0];
+    const seg = location.pathname.split('/').filter(Boolean);
+    const repo = seg.length && !seg[0].includes('.') ? seg[0] : user + '.github.io';
+    return 'https://raw.githubusercontent.com/' + user + '/' + repo + '/main/PLAN.md';
+  }
+
+  async function fetchPlan() {
+    const res = await fetch('PLAN.md?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) return res.text();
+    const raw = rawUrl(); // fallback if GitHub Pages did not publish PLAN.md as-is
+    if (raw) {
+      const r2 = await fetch(raw + '?t=' + Date.now(), { cache: 'no-store' });
+      if (r2.ok) return r2.text();
+    }
+    throw new Error('HTTP ' + res.status);
+  }
+
+  async function load() {
+    try {
+      render(parse(await fetchPlan()));
+      document.getElementById('error').hidden = true;
+    } catch (e) {
+      if (!firstRender) return; // keep the last good view
+      const box = document.getElementById('error');
+      box.hidden = false;
+      box.innerHTML = '<p class="notice">Could not read PLAN.md. Open this page from your GitHub Pages link, not by double-clicking the file, and check that PLAN.md is in the same folder.</p>';
+      document.getElementById('title').textContent = 'Learning tracker';
+    }
+  }
+
+  setEditLink();
+  load();
+  setInterval(load, 120000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+})();
+</script>
+</body>
+</html>
